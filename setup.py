@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name = 'buzzy',
@@ -9,8 +9,8 @@ setup(
     author = 'Sebastian Pawluś',
     author_email = 'sebastian.pawlus@gmail.com',
 
+    packages=['buzzy'],
     include_package_data = True,
-    py_modules = ['buzzy'],
 
     install_requires = [
         'Markdown==2.3.1',
