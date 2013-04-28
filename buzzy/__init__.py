@@ -13,9 +13,7 @@ BUILD_DIRECTORY = BASE_DIR / 'build'
 POSTS_DIR = BASE_DIR / 'posts'
 INDEX = BASE_DIR / 'index.html'
 
-POSTS = [
-    POSTS_DIR / 'hello.md',
-]
+POSTS = list(path(POSTS_DIR).walk(pattern='*.md', r=True))
 
 EXTRA = [
     BASE_DIR / 'libs',
