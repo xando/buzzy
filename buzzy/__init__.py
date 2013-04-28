@@ -34,13 +34,6 @@ def create(args):
     (package_dir / 'posts').cp(blog_dir / 'posts', r=True)
     (package_dir / 'img').cp(blog_dir / 'img', r=True)
 
-    print package_dir
-    print path(__file__).dir() / 'libs'
-    print "test"
-    print os.getcwd()
-    print args.name
-    # import pdb; pdb.set_trace()
-
 
 def build(args):
     if BUILD_DIRECTORY.exists:
