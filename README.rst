@@ -15,7 +15,4 @@ Quick Start
    $ cd blog 
 
    $ buzzy build 
-
-   $ cd build 
-
-   $ python -m SimpleHTTPServer 8000
+   $ buzzy server 
