@@ -1,18 +1,38 @@
+import re
+import time
 import argparse
 import os
 import codecs
 import markdown
 import SimpleHTTPServer
 import SocketServer
-
 from osome import path
 from datetime import datetime
 from pygments.formatters import HtmlFormatter
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+from multiprocessing import Process
+
 
 BASE_DIR = path(os.getcwd())
 
 
-def server(args):
+def _watch():
+    class WatchCode(FileSystemEventHandler):
+
+        def on_modified(self, event):
+            if not re.match('^.*/build/.*$', event.src_path):
+                build(1)
+
+    observer = Observer()
+    observer.schedule(WatchCode(), path=BASE_DIR, recursive=True)
+    observer.start()
+
+    while True:
+        time.sleep(1)
+
+
+def _server():
     os.chdir('build')
     PORT = 8000
     Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
@@ -20,6 +40,19 @@ def server(args):
     print "serving at port", PORT
     httpd.serve_forever()
 
+def server(args):
+    watch = Process(target=_watch)
+    watch.start()
+
+    server = Process(target=_server)
+    server.start()
+
+    try:
+        watch.join()
+        server.join()
+    except KeyboardInterrupt:
+        watch.terminate()
+        server.terminate()
 
 def create(args):
     blog_dir = (BASE_DIR / args.name).mkdir()
@@ -39,10 +72,7 @@ def build(args):
 
     POSTS = list(path(POSTS_DIR).walk(pattern='*.md', r=True))
 
-    EXTRA = [
-        BASE_DIR / 'libs',
-        BASE_DIR / 'img',
-    ]
+    EXTRA = [BASE_DIR / 'libs', BASE_DIR / 'img']
 
     PYGMENTS_STYLE = "emacs"
 
