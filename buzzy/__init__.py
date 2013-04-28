@@ -10,18 +10,6 @@ from datetime import datetime
 from pygments.formatters import HtmlFormatter
 
 BASE_DIR = path(os.getcwd())
-BUILD_DIRECTORY = BASE_DIR / 'build'
-POSTS_DIR = BASE_DIR / 'posts'
-INDEX = BASE_DIR / 'index.html'
-
-POSTS = list(path(POSTS_DIR).walk(pattern='*.md', r=True))
-
-EXTRA = [
-    BASE_DIR / 'libs',
-    BASE_DIR / 'img',
-]
-
-PYGMENTS_STYLE = "emacs"
 
 
 def server(args):
@@ -44,6 +32,20 @@ def create(args):
 
 
 def build(args):
+
+    BUILD_DIRECTORY = BASE_DIR / 'build'
+    POSTS_DIR = BASE_DIR / 'posts'
+    INDEX = BASE_DIR / 'index.html'
+
+    POSTS = list(path(POSTS_DIR).walk(pattern='*.md', r=True))
+
+    EXTRA = [
+        BASE_DIR / 'libs',
+        BASE_DIR / 'img',
+    ]
+
+    PYGMENTS_STYLE = "emacs"
+
     if BUILD_DIRECTORY.exists:
         [element.rm(r=True) for element in BUILD_DIRECTORY]
     else:
