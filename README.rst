@@ -2,10 +2,6 @@
 BUZZY
 =====
 
-***********
-Quick Start
-***********
-
 .. code::
 
    $ pip install buzzy
@@ -14,5 +10,4 @@ Quick Start
 
    $ cd blog
 
-   $ buzzy build
    $ buzzy server
