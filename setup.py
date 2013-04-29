@@ -17,6 +17,7 @@ setup(
         'Pygments==1.6',
         'buzzy==1.0.0',
         'osome==0.1.0',
+        'watchdog==0.6.0'
     ],
 
     entry_points={
