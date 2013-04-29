@@ -14,6 +14,7 @@ from pygments.formatters import HtmlFormatter
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from multiprocessing import Process
+from dateutil import parser
 
 
 class WatchCode(FileSystemEventHandler):
@@ -105,9 +106,14 @@ class BaseBlog(object):
                 index_content % html_content
             )
 
-            RESULTS.append(
-                {"title": md.Meta['title'][0], "link": generated_name}
-            )
+            RESULTS.append({
+                "title": md.Meta['title'][0],
+                "date": md.Meta['date'][0],
+                "date-object": parser.parse(md.Meta['date'][0]),
+                "link": generated_name
+            })
+
+        RESULTS.sort(key=lambda x:x['date-object'])
 
         index_main = "".join([
             '<a href="%(link)s"><h1>%(title)s</h1></a><div class="break">...</div>' % e
