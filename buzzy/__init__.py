@@ -1,11 +1,13 @@
+import os
+import sys
 import re
 import time
-import argparse
-import os
 import codecs
+import argparse
 import markdown
 import SimpleHTTPServer
 import SocketServer
+
 from osome import path
 from datetime import datetime
 from pygments.formatters import HtmlFormatter
@@ -14,108 +16,132 @@ from watchdog.events import FileSystemEventHandler
 from multiprocessing import Process
 
 
-BASE_DIR = path(os.getcwd())
+class WatchCode(FileSystemEventHandler):
+    def on_modified(self, event):
+        if not re.match('^.*/build/.*$', event.src_path):
+            BaseBlog().build()
 
 
-def _watch():
-    class WatchCode(FileSystemEventHandler):
+class BaseBlog(object):
 
-        def on_modified(self, event):
-            if not re.match('^.*/build/.*$', event.src_path):
-                build(1)
+    BASE_DIR = path(os.getcwd())
+    BUILD_DIRECTORY = BASE_DIR / 'build'
+    POSTS_DIR = BASE_DIR / 'posts'
+    INDEX = BASE_DIR / 'index.html'
+    EXTRA = [BASE_DIR / 'libs', BASE_DIR / 'img']
+    PYGMENTS_STYLE = "emacs"
+    SERVER_PORT = 8000
 
-    observer = Observer()
-    observer.schedule(WatchCode(), path=BASE_DIR, recursive=True)
-    observer.start()
+    read = lambda self,n: codecs.open(n, encoding='utf-8').read()
+    write = lambda self,n,c: codecs.open(n, encoding='utf-8', mode="w").write(c)
 
-    while True:
-        time.sleep(1)
+    def __new__(self, *args, **kwargs):
+        try:
+            sys.path.append(self.BASE_DIR)
+            from blog import Blog
+            return super(BaseBlog, self).__new__(Blog, *args, **kwargs)
+        except ImportError:
+            return super(BaseBlog, self).__new__(BaseBlog, *args, **kwargs)
 
+    def _watch(self):
+        observer = Observer()
+        observer.schedule(WatchCode(), path=self.BASE_DIR, recursive=True)
+        observer.start()
 
-def _server():
-    os.chdir('build')
-    PORT = 8000
-    Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-    httpd = SocketServer.TCPServer(("", PORT), Handler)
-    print "serving at port", PORT
-    httpd.serve_forever()
+        while True:
+            time.sleep(1)
+
+    def _server(self):
+        os.chdir(self.BUILD_DIRECTORY)
+
+        Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+        SocketServer.ThreadingTCPServer.allow_reuse_address = True
+        httpd = SocketServer.ThreadingTCPServer(("", self.SERVER_PORT), Handler)
+
+        print "serving at port %s" % self.SERVER_PORT
+        httpd.serve_forever()
+
+    def server(self):
+        self.build()
+
+        watch = Process(target=self._watch)
+        watch.start()
+        server = Process(target=self._server)
+        server.start()
+
+        try:
+            watch.join()
+            server.join()
+        except KeyboardInterrupt:
+            watch.terminate()
+            server.terminate()
+
+    def render_index(_file):
+        pass
+    def build(self):
+        POSTS = list(path(self.POSTS_DIR).walk(pattern='*.md', r=True))
+
+        if self.BUILD_DIRECTORY.exists:
+            [element.rm(r=True) for element in self.BUILD_DIRECTORY]
+        else:
+            self.BUILD_DIRECTORY.mkdir()
+
+        for extra in self.EXTRA:
+            extra.cp(self.BUILD_DIRECTORY / extra.basename, r=True)
+
+        index_content = self.read(self.INDEX)
+
+        RESULTS = []
+        for post in POSTS:
+            name = post.basename.split('.')[0]
+            generated_name = path("%s.html" % name)
+
+            markdown_content = codecs.open(post, encoding='utf-8').read()
+            md = markdown.Markdown(extensions=['codehilite', 'meta'])
+            html_content = md.convert(markdown_content)
+
+            self.write(
+                self.BUILD_DIRECTORY / generated_name,
+                index_content % html_content
+            )
+
+            RESULTS.append(
+                {"title": md.Meta['title'][0], "link": generated_name}
+            )
+
+        index_main = "".join([
+            '<a href="%(link)s"><h1>%(title)s</h1></a><div class="break">...</div>' % e
+            for e in RESULTS
+        ])
+
+        self.write(
+            self.BUILD_DIRECTORY / 'index.html',
+            index_content % index_main
+        )
+        self.write(
+            self.BUILD_DIRECTORY / 'libs' / 'pygments.css',
+            HtmlFormatter(style=self.PYGMENTS_STYLE).get_style_defs()
+        )
+
+        print "Generated %s" % datetime.now()
+
 
 def server(args):
-    watch = Process(target=_watch)
-    watch.start()
+    BaseBlog().server()
 
-    server = Process(target=_server)
-    server.start()
 
-    try:
-        watch.join()
-        server.join()
-    except KeyboardInterrupt:
-        watch.terminate()
-        server.terminate()
+def build(args):
+    BaseBlog().build()
+
 
 def create(args):
-    blog_dir = (BASE_DIR / args.name).mkdir()
+    blog_dir = (os.getcwd() / args.name).mkdir()
     package_dir = path(__file__).dir()
 
     (package_dir / 'index.html').cp(blog_dir / 'index.html')
     (package_dir / 'libs').cp(blog_dir / 'libs', r=True)
     (package_dir / 'posts').cp(blog_dir / 'posts', r=True)
     (package_dir / 'img').cp(blog_dir / 'img', r=True)
-
-
-def build(args):
-
-    BUILD_DIRECTORY = BASE_DIR / 'build'
-    POSTS_DIR = BASE_DIR / 'posts'
-    INDEX = BASE_DIR / 'index.html'
-
-    POSTS = list(path(POSTS_DIR).walk(pattern='*.md', r=True))
-
-    EXTRA = [BASE_DIR / 'libs', BASE_DIR / 'img']
-
-    PYGMENTS_STYLE = "emacs"
-
-    if BUILD_DIRECTORY.exists:
-        [element.rm(r=True) for element in BUILD_DIRECTORY]
-    else:
-        BUILD_DIRECTORY.mkdir()
-
-    for extra in EXTRA:
-        extra.cp(BUILD_DIRECTORY / extra.basename, r=True)
-
-    index_content = codecs.open(INDEX,  encoding='utf-8').read()
-
-    RESULTS = []
-    for post in POSTS:
-        name = post.basename.split('.')[0]
-        generated_name = path("%s.html" % name)
-
-        markdown_content = codecs.open(post, encoding='utf-8').read()
-        md = markdown.Markdown(extensions=['codehilite', 'meta'])
-        html_content = md.convert(markdown_content)
-
-        codecs.open(BUILD_DIRECTORY / generated_name, encoding='utf-8', mode="w").write(
-            index_content % html_content
-        )
-
-        RESULTS.append(
-            {"title": md.Meta['title'][0], "link": generated_name}
-        )
-
-    index_main = "".join([
-        '<a href="%(link)s"><h1>%(title)s</h1></a><div class="break">...</div>' % e
-        for e in RESULTS
-    ])
-
-    codecs.open(BUILD_DIRECTORY / 'index.html', encoding='utf-8', mode="w").write(
-        index_content % index_main
-    )
-
-    (BUILD_DIRECTORY / 'libs' / 'pygments.css').open('w').write(
-        HtmlFormatter(style=PYGMENTS_STYLE).get_style_defs()
-    )
-    print "Generated %s" % datetime.now()
 
 
 def main():
