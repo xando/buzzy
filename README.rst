@@ -2,6 +2,19 @@
 BUZZY
 =====
 
+   `>.___    o-.--.-o    ___,<'
+    /    `.   / ,, \   .'    \
+   {       `.; ,__, ;.'       }
+    `._      }       {      _.'
+       `,=."'        `".=,'
+      .'   /`-.____.-'_   `,
+      \_.';`-.______.-':`._/
+          `+-.______.-''
+            `-.____.-'
+             /  ||  \
+            ;   ;;   ;
+            `-./  \.-'     fsc
+
 ***********
 Quick Start
 ***********
@@ -12,7 +25,7 @@ Quick Start
 
    $ buzzy create blog
 
-   $ cd blog 
+   $ cd blog
 
-   $ buzzy build 
-   $ buzzy server 
+   $ buzzy build
+   $ buzzy server
