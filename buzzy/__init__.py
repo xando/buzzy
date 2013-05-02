@@ -53,7 +53,6 @@ class memoized(object):
         return self.func.__doc__
 
     def __get__(self, obj, objtype):
-        '''Support instance methods.'''
         return partial(self.__call__, obj)
 
 
@@ -76,12 +75,9 @@ class Base(object):
 
     BASE_DIR = path(os.getcwd())
     BUILD_DIR = 'build'
-    POSTS_DIR = path('posts')
-    INDEX = 'index.html'
-    PYGMENTS_STYLE = "emacs"
     SERVER_PORT = 8000
     EXCLUDE = [
-        '*.py', '*.pyc', POSTS_DIR, BUILD_DIR
+        '*.py', '*.pyc', BUILD_DIR
     ]
 
     read = lambda self, n: read(n)
