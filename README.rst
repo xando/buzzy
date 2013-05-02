@@ -10,7 +10,7 @@ Install
 
 This bit is easy
 
-.. code::bash
+.. code::
 
    $ pip install buzzy
 
@@ -22,7 +22,7 @@ Quick Start
 
 Let's create your new static site
 
-.. code::bash
+.. code::
 
    $ buzzy start my-site
 
