@@ -27,10 +27,11 @@ def get_class():
     from hive import StaticSite
     return StaticSite()
 
+
 class WatchCode(FileSystemEventHandler):
     def on_modified(self, event):
         if not re.match('^.*/build/.*$', event.src_path):
-            BaseStaticSite().build()
+            get_class().build()
 
 
 class memoized(object):
@@ -55,6 +56,7 @@ class memoized(object):
         '''Support instance methods.'''
         return partial(self.__call__, obj)
 
+
 class render(object):
     def __init__(self, *args):
         self.args = args
@@ -68,7 +70,7 @@ class render(object):
         return wrapped_f
 
 
-class BaseStaticSite(object):
+class Base(object):
 
     _register = []
 
@@ -86,7 +88,7 @@ class BaseStaticSite(object):
     write = lambda self, n,c: write(n, c)
 
     def __init__(self, *args, **kwargs):
-        super(BaseStaticSite, self).__init__(*args, **kwargs)
+        super(Base, self).__init__(*args, **kwargs)
         atributes = [getattr(self,a) for a in dir(self)]
 
         self.renderers = [
@@ -157,6 +159,7 @@ class BaseStaticSite(object):
         except KeyboardInterrupt:
             server.terminate()
             watch.terminate()
+
 
 def server(args):
     get_class().server()
