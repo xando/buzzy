@@ -1,48 +1,129 @@
 import os
-import sys
 import re
+import sys
 import time
 import codecs
+import inspect
+import fnmatch
 import argparse
-import markdown
 import SimpleHTTPServer
 import SocketServer
 
 from osome import path
+from functools import partial
+from collections import Hashable
 from datetime import datetime
-from pygments.formatters import HtmlFormatter
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from multiprocessing import Process
-from dateutil import parser
 
+
+read = lambda n: codecs.open(n, encoding='utf-8').read()
+write = lambda n,c: codecs.open(n, encoding='utf-8', mode="w").write(c)
+
+
+def get_class():
+    sys.path.append(os.getcwd())
+    from hive import StaticSite
+    return StaticSite()
 
 class WatchCode(FileSystemEventHandler):
     def on_modified(self, event):
         if not re.match('^.*/build/.*$', event.src_path):
-            BaseBlog().build()
+            BaseStaticSite().build()
 
 
-class BaseBlog(object):
+class memoized(object):
+    def __init__(self, func):
+        self.func = func
+        self.cache = {}
+
+    def __call__(self, *args):
+        if not isinstance(args, Hashable):
+            return self.func(*args)
+        if args in self.cache:
+            return self.cache[args]
+        else:
+            value = self.func(*args)
+            self.cache[args] = value
+            return value
+
+    def __repr__(self):
+        return self.func.__doc__
+
+    def __get__(self, obj, objtype):
+        '''Support instance methods.'''
+        return partial(self.__call__, obj)
+
+class render(object):
+    def __init__(self, *args):
+        self.args = args
+
+    def __call__(self, args):
+        if not inspect.isfunction(args):
+            return self.args[0](args)
+        def wrapped_f(cls):
+            return args(cls, *[path(a) for a in self.args])
+        wrapped_f.render = True
+        return wrapped_f
+
+
+class BaseStaticSite(object):
+
+    _register = []
 
     BASE_DIR = path(os.getcwd())
-    BUILD_DIRECTORY = BASE_DIR / 'build'
-    POSTS_DIR = BASE_DIR / 'posts'
-    INDEX = BASE_DIR / 'index.html'
-    EXTRA = [BASE_DIR / 'libs', BASE_DIR / 'img']
+    BUILD_DIR = 'build'
+    POSTS_DIR = path('posts')
+    INDEX = 'index.html'
     PYGMENTS_STYLE = "emacs"
     SERVER_PORT = 8000
+    EXCLUDE = [
+        '*.py', '*.pyc', POSTS_DIR, BUILD_DIR
+    ]
 
-    read = lambda self,n: codecs.open(n, encoding='utf-8').read()
-    write = lambda self,n,c: codecs.open(n, encoding='utf-8', mode="w").write(c)
+    read = lambda self, n: read(n)
+    write = lambda self, n,c: write(n, c)
 
-    def __new__(self, *args, **kwargs):
-        try:
-            sys.path.append(self.BASE_DIR)
-            from blog import Blog
-            return super(BaseBlog, self).__new__(Blog, *args, **kwargs)
-        except ImportError:
-            return super(BaseBlog, self).__new__(BaseBlog, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(BaseStaticSite, self).__init__(*args, **kwargs)
+        atributes = [getattr(self,a) for a in dir(self)]
+
+        self.renderers = [
+            func() for func in atributes if hasattr(func, 'render')
+        ]
+        self.renderers.extend([
+            func(self) for func in atributes if isinstance(func, render)
+        ])
+
+
+    def build(self):
+        self.BUILD_DIR = path(self.BUILD_DIR)
+        if self.BUILD_DIR.exists:
+            [element.rm(r=True) for element in self.BUILD_DIR]
+        else:
+            self.BUILD_DIR.mkdir()
+
+        for f in path(self.BASE_DIR).ls():
+            if not any([fnmatch.fnmatch(f.relative(self.BASE_DIR),pattern)
+                        for pattern in self.EXCLUDE]):
+                f.cp(self.BUILD_DIR / f.basename, r=True)
+
+        render_objects = []
+        for element in filter(lambda x:x, [r for r in self.renderers]):
+            if type(element) in [list, tuple]:
+                render_objects.extend(element)
+            else:
+                render_objects.append(element)
+
+        for element in render_objects:
+            directory = path(element['name']).dir()
+            directory_build = self.BUILD_DIR / directory
+            if directory and not directory_build.exists:
+                directory_build.mkdir(p=True)
+            self.write(self.BUILD_DIR / element['name'], element['content'])
+
+        print "Generated %s" % datetime.now()
 
     def _watch(self):
         observer = Observer()
@@ -53,7 +134,7 @@ class BaseBlog(object):
             time.sleep(1)
 
     def _server(self):
-        os.chdir(self.BUILD_DIRECTORY)
+        os.chdir(self.BUILD_DIR)
 
         Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
         SocketServer.ThreadingTCPServer.allow_reuse_address = True
@@ -74,70 +155,15 @@ class BaseBlog(object):
             watch.join()
             server.join()
         except KeyboardInterrupt:
-            watch.terminate()
             server.terminate()
-
-    def render_index(_file):
-        pass
-    def build(self):
-        POSTS = list(path(self.POSTS_DIR).walk(pattern='*.md', r=True))
-
-        if self.BUILD_DIRECTORY.exists:
-            [element.rm(r=True) for element in self.BUILD_DIRECTORY]
-        else:
-            self.BUILD_DIRECTORY.mkdir()
-
-        for extra in self.EXTRA:
-            extra.cp(self.BUILD_DIRECTORY / extra.basename, r=True)
-
-        index_content = self.read(self.INDEX)
-
-        RESULTS = []
-        for post in POSTS:
-            name = post.basename.split('.')[0]
-            generated_name = path("%s.html" % name)
-
-            markdown_content = codecs.open(post, encoding='utf-8').read()
-            md = markdown.Markdown(extensions=['codehilite', 'meta'])
-            html_content = md.convert(markdown_content)
-
-            self.write(
-                self.BUILD_DIRECTORY / generated_name,
-                index_content % html_content
-            )
-
-            RESULTS.append({
-                "title": md.Meta['title'][0],
-                "date": md.Meta['date'][0],
-                "date-object": parser.parse(md.Meta['date'][0]),
-                "link": generated_name
-            })
-
-        RESULTS.sort(key=lambda x:x['date-object'])
-
-        index_main = "".join([
-            '<a href="%(link)s"><h1>%(title)s</h1></a><div class="break">...</div>' % e
-            for e in RESULTS
-        ])
-
-        self.write(
-            self.BUILD_DIRECTORY / 'index.html',
-            index_content % index_main
-        )
-        self.write(
-            self.BUILD_DIRECTORY / 'libs' / 'pygments.css',
-            HtmlFormatter(style=self.PYGMENTS_STYLE).get_style_defs()
-        )
-
-        print "Generated %s" % datetime.now()
-
+            watch.terminate()
 
 def server(args):
-    BaseBlog().server()
+    get_class().server()
 
 
 def build(args):
-    BaseBlog().build()
+    get_class().build()
 
 
 def create(args):
