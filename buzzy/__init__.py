@@ -64,7 +64,7 @@ class render(object):
         if not inspect.isfunction(args):
             return self.args[0](args)
         def wrapped_f(cls):
-            return args(cls, *[path(a) for a in self.args])
+            return args(cls, *[ path(a).relative(cls.BASE_DIR) for a in self.args])
         wrapped_f.render = True
         return wrapped_f
 
