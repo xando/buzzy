@@ -4,7 +4,7 @@ from setuptools import setup
 setup(
     name = 'buzzy',
     version = '1.0.0',
-    description = 'Static, dynamic blog generator',
+    description = 'Static site generator',
     license = 'BSD',
     author = 'Sebastian Pawluś',
     author_email = 'sebastian.pawlus@gmail.com',
