@@ -1,8 +1,8 @@
 import os
-import re
 import sys
 import time
 import codecs
+import hashlib
 import inspect
 import fnmatch
 import argparse
@@ -13,8 +13,6 @@ from osome import path
 from functools import partial
 from collections import Hashable
 from datetime import datetime
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 from multiprocessing import Process
 
 
@@ -26,12 +24,6 @@ def get_class():
     sys.path.append(os.getcwd())
     from hive import StaticSite
     return StaticSite()
-
-
-class WatchCode(FileSystemEventHandler):
-    def on_modified(self, event):
-        if not re.match('^.*/build/.*$', event.src_path):
-            get_class().build()
 
 
 class memoized(object):
@@ -77,7 +69,7 @@ class Base(object):
     BUILD_DIR = 'build'
     SERVER_PORT = 8000
     EXCLUDE = [
-        '*.py', '*.pyc', BUILD_DIR
+        '.git*', '*.py', '*.pyc', "%s/*" % BUILD_DIR, BUILD_DIR
     ]
 
     read = lambda self, n: read(n)
@@ -124,12 +116,19 @@ class Base(object):
         print "Generated %s" % datetime.now()
 
     def _watch(self):
-        observer = Observer()
-        observer.schedule(WatchCode(), path=self.BASE_DIR, recursive=True)
-        observer.start()
+        old_hash = ""
 
         while True:
-            time.sleep(1)
+            hash_elements = []
+            for f in path(self.BASE_DIR).walk(r=True):
+                if not any([fnmatch.fnmatch(f.relative(self.BASE_DIR),pattern)
+                            for pattern in self.EXCLUDE]):
+                    hash_elements.append(f.m_datetime.isoformat())
+            current_hash =  hashlib.md5("".join(hash_elements)).hexdigest()
+            if current_hash != old_hash:
+                old_hash = current_hash
+                self.build()
+            time.sleep(0.2)
 
     def _server(self):
         os.chdir(self.BUILD_DIR)
@@ -142,8 +141,6 @@ class Base(object):
         httpd.serve_forever()
 
     def server(self):
-        self.build()
-
         watch = Process(target=self._watch)
         watch.start()
         server = Process(target=self._server)
