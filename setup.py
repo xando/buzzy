@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name = 'buzzy',
-    version = '1.0.0',
+    version = '1.0.1',
     description = 'Static site generator',
     license = 'BSD',
     author = 'Sebastian Pawluś',
@@ -13,8 +13,8 @@ setup(
     include_package_data = True,
 
     install_requires = [
-        'buzzy==1.0.0',
         'osome==0.1.2',
+        'Jinja2==2.6'
     ],
 
     entry_points={

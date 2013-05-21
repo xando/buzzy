@@ -2,7 +2,7 @@
 BUZZY
 =====
 
-Buzzy is a (very) simple, microframework to generate static sites. 
+Buzzy is a (very) simple, microframework to generate static sites.
 
 -------
 Install
@@ -24,9 +24,9 @@ Let's create your new static site
 
 .. code::
 
-   $ buzzy start my-site
+   $ buzzy create my-thing
 
-   $ cd my-site
+   $ cd my-thing
 
    $ buzzy server
 

@@ -4,7 +4,6 @@ import time
 import args
 import codecs
 import hashlib
-import inspect
 import fnmatch
 import SimpleHTTPServer
 import SocketServer
@@ -14,6 +13,7 @@ from functools import partial
 from collections import Hashable
 from datetime import datetime
 from multiprocessing import Process
+from jinja2 import Environment, FileSystemLoader
 
 
 read = lambda n: codecs.open(n, encoding='utf-8').read()
@@ -22,16 +22,20 @@ write = lambda n,c: codecs.open(n, encoding='utf-8', mode="w").write(c)
 
 def get_class():
     sys.path.append(os.getcwd())
-    from hive import StaticSite
-    return StaticSite()
+    try:
+        from main import StaticSite
+        return StaticSite()
+    except ImportError:
+        return Base()
 
 
 class memoized(object):
+    register = []
 
     def __init__(self, func):
-        self.register.append(self)
         self.func = func
         self.cache = {}
+        self.register.append(self)
 
     def __call__(self, *args):
         if not isinstance(args, Hashable):
@@ -43,24 +47,22 @@ class memoized(object):
             self.cache[args] = value
             return value
 
-    def __repr__(self):
-        return self.func.__doc__
-
     def __get__(self, obj, objtype):
         return partial(self.__call__, obj)
 
 
 class render(object):
-    def __init__(self, *args):
-        self.args = args
+    register = []
 
-    def __call__(self, args):
-        if not inspect.isfunction(args):
-            return self.args[0](args)
-        def wrapped_f(cls):
-            return args(cls, *[ path(a).relative(cls.BASE_DIR) for a in self.args])
-        wrapped_f.render = True
-        return wrapped_f
+    def __init__(self, func):
+        self.func = func
+        self.register.append(func.func_name)
+
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
+    def __get__(self, obj, objtype):
+        return partial(self.__call__, obj)
 
 
 class command(object):
@@ -79,10 +81,9 @@ class command(object):
 
 class Base(object):
 
-    _register = []
-
     BASE_DIR = path(os.getcwd())
     BUILD_DIR = 'build'
+    TEMPLATES_DIR = 'templates'
     SERVER_PORT = 8000
     EXCLUDE = [
         '.git*', '*.py', '*.pyc', "%s/*" % BUILD_DIR, BUILD_DIR
@@ -91,22 +92,24 @@ class Base(object):
     read = lambda self, n: read(n)
     write = lambda self, n,c: write(n, c)
 
-    def _build(self):
-        atributes = [getattr(self,a) for a in dir(self)]
+    def template(self, template_name):
+        env = Environment(loader=FileSystemLoader(self.TEMPLATES_DIR))
+        return env.get_template(path(template_name))
 
-        self.renderers = [
-            func() for func in atributes if hasattr(func, 'render')
-        ]
+    def render_template(self, template_name, **context):
+        return self.template(template_name).render(**context)
 
-        self.renderers.extend([
-            func(self) for func in atributes if isinstance(func, render)
-        ])
-
+    def __init__(self):
         self.BUILD_DIR = path(self.BUILD_DIR)
         if self.BUILD_DIR.exists:
             [element.rm(r=True) for element in self.BUILD_DIR]
         else:
             self.BUILD_DIR.mkdir()
+
+    def _build(self):
+        self.renderers = [getattr(self, r)() for r in render.register]
+        for m in memoized.register:
+            m.cache = {}
 
         for f in path(self.BASE_DIR).ls():
             if not any([fnmatch.fnmatch(f.relative(self.BASE_DIR),pattern)
@@ -174,25 +177,18 @@ class Base(object):
             server.terminate()
 
     @command
-    def create(args):
-        blog_dir = (os.getcwd() / args.name).mkdir()
-        package_dir = path(__file__).dir()
-
-        (package_dir / 'index.html').cp(blog_dir / 'index.html')
-        (package_dir / 'libs').cp(blog_dir / 'libs', r=True)
-        (package_dir / 'posts').cp(blog_dir / 'posts', r=True)
-        (package_dir / 'img').cp(blog_dir / 'img', r=True)
+    def create(self, args):
+        name = args.all[1]
+        (path(__file__).dir() / 'templates' / 'basic').cp(path(os.getcwd()) / name, r=True)
 
 
 def main():
-    klass = get_class()
-
     if args.all:
         arg_0 = args.all[0]
         if arg_0 not in command.register:
             print "No such command '%s'" % arg_0
         else:
-            getattr(klass, arg_0)(args)
+            getattr(get_class(), arg_0)(args)
 
 if __name__ == "__main__":
     main()
