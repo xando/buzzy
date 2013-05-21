@@ -1,4 +1,2 @@
 include buzzy/index.html
-recursive-include buzzy/posts *
-recursive-include buzzy/libs *
-recursive-include buzzy/img *
+recursive-include buzzy/templates *
