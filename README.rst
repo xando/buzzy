@@ -24,9 +24,11 @@ Let's create your new static site
 
 .. code::
 
-   $ buzzy create my-thing
+   $ buzzy create projectname 
+   # or, if you want to use other templates
+   $ buzzy create projectname [basic|blog]
 
-   $ cd my-thing
+   $ cd projectname
 
    $ buzzy server
 
