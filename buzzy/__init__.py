@@ -99,15 +99,15 @@ class Base(object):
     def render_template(self, template_name, **context):
         return self.template(template_name).render(**context)
 
-    def __init__(self):
+    def _build(self):
         self.BUILD_DIR = path(self.BUILD_DIR)
         if self.BUILD_DIR.exists:
             [element.rm(r=True) for element in self.BUILD_DIR]
         else:
             self.BUILD_DIR.mkdir()
 
-    def _build(self):
         self.renderers = [getattr(self, r)() for r in render.register]
+
         for m in memoized.register:
             m.cache = {}
 
