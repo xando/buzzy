@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name = 'buzzy',
-    version = '1.0.3',
+    version = '1.0.4',
     description = 'Static site generator',
     license = 'BSD',
     author = 'Sebastian Pawluś',

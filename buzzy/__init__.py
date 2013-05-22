@@ -178,7 +178,7 @@ class Base(object):
 
     @command
     def create(self, args):
-        import pdb; pdb.set_trace()
+
         if len(args.all) > 2:
             template = args.all[2]
         else:
