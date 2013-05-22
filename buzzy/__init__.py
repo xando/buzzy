@@ -178,8 +178,17 @@ class Base(object):
 
     @command
     def create(self, args):
-        name = args.all[1]
-        (path(__file__).dir() / 'templates' / 'basic').cp(path(os.getcwd()) / name, r=True)
+        import pdb; pdb.set_trace()
+        if len(args.all) > 2:
+            template = args.all[2]
+        else:
+            template = 'basic'
+
+        if len(args.all) > 1:
+            name = args.all[1]
+            (path(__file__).dir() / 'templates' / template).cp(path(os.getcwd()) / name, r=True)
+        else:
+            print "name required"
 
 
 def main():
