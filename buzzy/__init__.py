@@ -15,7 +15,6 @@ from multiprocessing import Process
 from jinja2 import Environment, FileSystemLoader
 
 from buzzy import render
-from buzzy import commandr
 
 
 class memoized(object):
