@@ -3,3 +3,4 @@ build
 *.pyo
 *.egg
 dist
+docs/_build
