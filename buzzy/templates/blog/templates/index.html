@@ -36,15 +36,17 @@
 			</div>
 		</div>
 
-		<div class="container">
-
+		<div class="page-content container">
 			{% for post in posts_list %}
-			<p>{{ post.content }}</p>
-			<i>{{ post.a_datetime }}</i>
+			<article>
+				<p>{{ post.content }}</p>
+				<i>{{ post.a_datetime }}</i>
+			</article>
             <hr>
 			{% endfor %}
 		</div>
 
+		<script src="/libs/jquery.pjax.js"></script>
 		<script src="/libs/jquery-1.9.1.min.js"></script>
 		<script src="/libs/bootstrap/bootstrap.js"></script>
 
