@@ -17,6 +17,34 @@ from jinja2 import Environment, FileSystemLoader
 from buzzy import render
 
 
+class register(object):
+    elements = []
+
+    def __init__(self, func):
+        self.func = func
+        self.elements.append(func.func_name)
+
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
+    def __get__(self, obj, objtype):
+        return partial(self.__call__, obj)
+
+
+class command(object):
+    register = []
+
+    def __init__(self, func):
+        self.func = func
+        self.register.append(func.func_name)
+
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
+    def __get__(self, obj, objtype):
+        return partial(self.__call__, obj)
+
+
 class memoized(object):
     register = []
 
@@ -39,29 +67,12 @@ class memoized(object):
         return partial(self.__call__, obj)
 
 
-class command(object):
-    register = []
-
-    def __init__(self, func):
-        self.func = func
-        self.register.append(func.func_name)
-
-    def __call__(self, *args, **kwargs):
-        return self.func(*args, **kwargs)
-
-    def __get__(self, obj, objtype):
-        return partial(self.__call__, obj)
-
-
 class Base(object):
 
     BASE_DIR = path(os.getcwd())
     BUILD_DIR = '_build'
     TEMPLATES_DIR = 'templates'
     SERVER_PORT = 8000
-    EXCLUDE = [
-        '.git*', '*.py', '*.pyc', "%s/*" % BUILD_DIR, BUILD_DIR
-    ]
 
     def __init__(self):
         render.render.klass = self
@@ -74,9 +85,6 @@ class Base(object):
     def template(self, template_name):
         env = Environment(loader=FileSystemLoader(self.TEMPLATES_DIR))
         return env.get_template(path(template_name))
-
-    def render_template(self, template_name, **context):
-        return self.template(template_name).render(**context)
 
     def _clean_memoized(self):
         for m in memoized.register:
@@ -93,8 +101,7 @@ class Base(object):
         self._clean_memoized()
         self._clean_build_dir()
 
-        for name in render.register:
-            getattr(self, name)()
+        [getattr(self, func)() for func in register.elements]
 
         print "Generated %s" % datetime.now()
 
