@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Buzzy's documentation!
-=================================
+Welcome to Buzzy!
+=================
 
 The static page generator, with simple API!
 
@@ -21,3 +21,19 @@ https://github.com/xando/buzzy
 
 
 -----
+
+
+Quick Start
+-----------
+
+Renderers
+---------
+
+.. autoclass:: buzzy.render.content
+
+.. autoclass:: buzzy.render.template
+
+Helpers
+-------
+
+memonize
