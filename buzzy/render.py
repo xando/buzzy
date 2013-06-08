@@ -10,7 +10,8 @@ class render(object):
 
 class content(render):
     """
-    Renderer class to create a file from a content. Use **name** as a name for destination file.
+    Renderer class to create a file from a content.
+    Use **name** as a name for destination file.
     Create **content** to fill the file in.
     """
 
@@ -21,7 +22,8 @@ class content(render):
 
 class template(content):
     """
-    Renderer class to render file from a template. Use **name** as a name for destination file.
+    Renderer class to render file from a template.
+    Use **name** as a name for destination file.
     **template** for source jinja2 template located in the template directory,
     use some **context** for fill template in.
     """
