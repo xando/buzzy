@@ -39,6 +39,12 @@ class template(content):
 
 class markdown(content):
 
+    """
+    Renderer class to render file from a markdown markup.
+    Use **name** as a name for destination file.
+    **source** for source of the markup file,
+    """
+
     def __init__(self, name, source):
         md = _markdown.Markdown(extensions=[
             'buzzy.packages.markdown.extensions.codehilite',

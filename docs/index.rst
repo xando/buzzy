@@ -33,6 +33,8 @@ Renderers
 
 .. autoclass:: buzzy.render.template
 
+.. autoclass:: buzzy.render.markdown
+
 Helpers
 -------
 
