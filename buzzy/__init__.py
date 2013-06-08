@@ -1,6 +1,7 @@
 import os
 import time
 import args
+import codecs
 
 import hashlib
 import fnmatch
@@ -12,7 +13,7 @@ from functools import partial
 from collections import Hashable
 from datetime import datetime
 from multiprocessing import Process
-from jinja2 import Environment, FileSystemLoader
+
 
 from buzzy import render
 
@@ -76,8 +77,11 @@ class Base(object):
     WATCH_EXCLUDE = [
         '.git*', '*.py', '*.pyc', "%s/*" % BUILD_DIR, BUILD_DIR
     ]
+    INCLUDE = []
 
     def __init__(self):
+        self.BUILD_DIR = path(self.BUILD_DIR)
+
         render.render.klass = self
         arg_0 = args.all[0]
         if arg_0 not in command.register:
@@ -85,26 +89,41 @@ class Base(object):
         else:
             getattr(self, arg_0)(args)
 
-    def template(self, template_name):
-        env = Environment(loader=FileSystemLoader(self.TEMPLATES_DIR))
-        return env.get_template(path(template_name))
+
+    def _ensure_path(self, name):
+        directory = path(name).dir()
+        directory_build = self.BUILD_DIR / directory
+        if directory and not directory_build.exists:
+            directory_build.mkdir(p=True)
+
+    def write(self, name, content):
+        self._ensure_path(name)
+        codecs.open(
+            self.BUILD_DIR / name, encoding='utf-8', mode="w"
+        ).write(content)
 
     def _clean_memoized(self):
         for m in memoized.register:
             m.cache = {}
 
     def _clean_build_dir(self):
-        self.BUILD_DIR = path(self.BUILD_DIR)
         if self.BUILD_DIR.exists:
             [element.rm(r=True) for element in self.BUILD_DIR]
         else:
             self.BUILD_DIR.mkdir()
 
+    def _include(self):
+        for element in self.INCLUDE:
+            path(element).cp(self.BUILD_DIR / element, r=True)
+
     def _build(self):
         self._clean_memoized()
         self._clean_build_dir()
+        self._include()
 
-        [getattr(self, func)() for func in register.elements]
+        for func in register.elements:
+            for renderer in getattr(self, func)():
+                self.write(renderer.name, renderer.content)
 
         print "Generated %s" % datetime.now()
 
