@@ -71,7 +71,7 @@ class memoized(object):
 class Base(object):
 
     BASE_DIR = path(os.getcwd())
-    BUILD_DIR = '_build'
+    BUILD_DIR = 'build'
     TEMPLATES_DIR = 'templates'
     SERVER_PORT = 8000
     WATCH_EXCLUDE = [
