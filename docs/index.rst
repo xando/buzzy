@@ -8,6 +8,15 @@ Welcome to Buzzy!
 
 Low level static page generator, with simple API!
 
+Why to write use static sites generator?
+
+There are many cases, where your website will be static and using dynamic pages framework like Django, Ruby on Rails, Flask, Sinatra would be a bit of overhead.
+
+Why to write another static website generator?
+
+Not really sure, yet!
+
+
 Quick Start
 -----------
 
