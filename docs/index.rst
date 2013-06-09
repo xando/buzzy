@@ -37,13 +37,13 @@ The very simple page with buzzy
    class StaticSite(buzzy.Base):
    
        @buzzy.register
-       def pygments(self):
+       def thing(self):
            yield buzzy.render.content("index.html", "Buzzy is awesome!")
    
    if __name__ == "__main__":
        StaticSite()
 
-save this you project file
+Each "view" created with buzzy needs to be decorated with **register**. This way buzzy will know which method in class should be called during the build process.
 
 .. code-block:: bash
 
@@ -51,13 +51,63 @@ save this you project file
    Generated 2013-06-09 11:10:40.133868
    serving at port 8000
 
-And then go to your browser to http://127.0.0.1:8000/, done. 
+Go to your browser to http://127.0.0.1:8000/, done!
 
 
 Source Code
 -----------
 
 https://github.com/xando/buzzy
+
+
+Renderers
+---------
+
+.. function:: render.content(target, content)
+	      
+   Renderer class to create a file from a content.
+
+   :param target: name of the destination file
+   :param content: content to put inside he file
+
+.. code-block:: python
+   
+   @buzzy.register
+   def view(self):
+       yield buzzy.render.content("index.html", "hello world")
+
+
+   
+.. function:: render.template(target, template, **context)
+
+   Renderer class to render file from a template.
+
+   :param target: name of the destination file
+   :param template: jinja2 template located in the **TEMPLATE_DIR**
+   :param **context: as many named parameters as needed, 
+		     all will be put as a context inside the template
+
+.. code-block:: python
+
+   @buzzy.register
+   def view(self):
+       yield buzzy.render.template("index.html", "index.tpl", text="hello world")
+
+
+
+
+.. function:: render.markdown(target, source)
+	      
+   Renderer class to render file from a markdown markup.
+
+   :param target: name of the destination file
+   :param source: for source of the markup file
+
+.. code-block:: python
+
+   @buzzy.register
+   def view(self):
+       yield buzzy.render.markdown("index.html", "index.md")
 
 
 Settings
@@ -85,35 +135,6 @@ Settings
   List of files to be excluded from watch process. Usually when **server** method is called, the build directory will be reload every time when page got changed. This setting prevents from calling rebuild for some files. 
 
 
-Renderers
----------
-
-.. function:: render.content(target, content)
-	      
-   Renderer class to create a file from a content.
-
-   :param target: name of the destination file
-   :param content: content to put inside he file
-
-
-.. function:: render.template(target, template, **context)
-
-   Renderer class to render file from a template.
-
-   :param target: name of the destination file
-   :param template: jinja2 template located in the **TEMPLATE_DIR**
-   :param **context: as many named parameters as needed, 
-		     all will be put as a context inside the template
-
-
-.. function:: render.markdown(target, source)
-	      
-   Renderer class to render file from a markdown markup.
-
-   :param target: name of the destination file
-   :param source: for source of the markup file
-
-
 Helpers
 -------
 
@@ -123,9 +144,9 @@ memonize
 Why yield
 ---------
 
-There are three reasons why to use yield here.
+There are three main reasons why to use yield here:
 
-* is cool, and is overly underrated as python mechanism,
+* yield is cool, and is overly underrated as python mechanism,
 * render function may call yield many times, which means that one function may generate more than one file,
 * yield is memory efficient, we are operating here on file contents in memory, yield will reduce some pain here.
 
