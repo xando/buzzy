@@ -47,7 +47,7 @@ The very simple page with buzzy
    
        @buzzy.register
        def thing(self):
-           yield buzzy.render.content("index.html", "Buzzy is awesome!")
+           yield buzzy.render.content("index.html", "Hello world")
    
    if __name__ == "__main__":
        StaticSite()
@@ -59,7 +59,21 @@ Each "view" created with buzzy needs to be decorated with **register**. This way
    $ python project.py build
    Generated 2013-06-09 11:10:40.133868
 
+In your build directory, which will be **_build**. 
 
+.. code-block:: bash
+
+   $ ls _build
+   index.html
+   $ cat _build/index.html
+   Hello world
+
+You should see there one file *index.html*, 
+and the content of this file will be 'Hello world'
+
+.. code-block:: bash
+
+   $ python project.py server
 
 Go to your browser to http://127.0.0.1:8000/, done!
 
