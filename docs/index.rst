@@ -127,5 +127,5 @@ There are three reasons why to use yield here.
 
 * is cool, and is overly underrated as python mechanism,
 * render function may call yield many times, which means that one function may generate more than one file,
-* yield is memory efficient, we are operating here on file contents in memory, yield is reduces some pain here.
+* yield is memory efficient, we are operating here on file contents in memory, yield will reduce some pain here.
 
