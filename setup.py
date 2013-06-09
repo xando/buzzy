@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name = 'buzzy',
-    version = '0.4',
+    version = '0.4.1',
     description = 'Static site generator',
     license = 'BSD',
     author = 'Sebastian Pawluś',
     author_email = 'sebastian.pawlus@gmail.com',
     url="http://buzzy.xando.org",
-    packages=['buzzy'],
+    packages=find_packages(),
     include_package_data = True,
 
     install_requires = [
