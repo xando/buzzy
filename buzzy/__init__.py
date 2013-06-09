@@ -70,14 +70,14 @@ class memoized(object):
 
 class Base(object):
 
+    INCLUDE = []
     BASE_DIR = path(os.getcwd())
-    BUILD_DIR = 'build'
+    BUILD_DIR = '_build'
     TEMPLATES_DIR = 'templates'
     SERVER_PORT = 8000
     WATCH_EXCLUDE = [
         '.git*', '*.py', '*.pyc', "%s/*" % BUILD_DIR, BUILD_DIR
     ]
-    INCLUDE = []
 
     def __init__(self):
         self.BUILD_DIR = path(self.BUILD_DIR)
