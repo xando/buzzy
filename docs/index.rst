@@ -47,17 +47,12 @@ Each "view" created with buzzy needs to be decorated with **register**. This way
 
 .. code-block:: bash
 
-   $ python project.py server
+   $ python project.py build
    Generated 2013-06-09 11:10:40.133868
-   serving at port 8000
+
+
 
 Go to your browser to http://127.0.0.1:8000/, done!
-
-
-Source Code
------------
-
-https://github.com/xando/buzzy
 
 
 Renderers
@@ -150,3 +145,8 @@ There are three main reasons why to use yield here:
 * render function may call yield many times, which means that one function may generate more than one file,
 * yield is memory efficient, we are operating here on file contents in memory, yield will reduce some pain here.
 
+
+Source Code
+-----------
+
+https://github.com/xando/buzzy
