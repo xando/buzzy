@@ -78,7 +78,7 @@ Go to your browser to http://127.0.0.1:8000/, done!
 Renderers
 ---------
 
-.. function:: render.content(target, content)
+.. function:: buzzy.render.content(target, content)
 	      
    Renderer class to create a file from a content.
 
@@ -93,7 +93,7 @@ Renderers
 
 
    
-.. function:: render.template(target, template, **context)
+.. function:: buzzy.render.template(target, template, **context)
 
    Renderer class to render file from a template.
 
@@ -110,7 +110,7 @@ Renderers
 
 
 
-.. function:: render.markdown(target, source)
+.. function:: buzzy.render.markdown(target, source)
 	      
    Renderer class to render file from a markdown markup.
 
@@ -162,7 +162,7 @@ Helpers
 -------
 
 
-.. function:: memoized
+.. function:: buzzy.memoized
 	      
    Helper function decorator, it will remember function results within one build cycle. 
    Useful when you have code to use in than more render function.
