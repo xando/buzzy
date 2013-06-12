@@ -2,8 +2,6 @@ import os
 import time
 import args
 import codecs
-
-import hashlib
 import fnmatch
 import SimpleHTTPServer
 import SocketServer
