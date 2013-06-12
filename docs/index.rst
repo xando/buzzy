@@ -110,7 +110,6 @@ Renderers
 
 
 
-
 .. function:: render.markdown(target, source)
 	      
    Renderer class to render file from a markdown markup.
@@ -153,7 +152,35 @@ Settings
 Helpers
 -------
 
-memonize
+
+.. function:: memoized
+	      
+   Helper function decorator that will remember function results within one build cycle. 
+   Useful when you have code to use in than more render function.
+
+.. code-block:: python
+
+   import buzzy
+
+   class StaticSite(buzzy.Base):
+
+       @buzzy.memoized
+       def something_expensive(self):
+           # code
+           return results
+
+       @buzzy.register
+       def some_view(self):
+           context = self.something_expensive()
+           yield buzzy.render.template("index.html", "index.html", context=context)
+
+       @buzzy.register
+       def other_view(self):
+           context = self.something_expensive()
+	   yield buzzy.render.template("rss.html", "rss.html", context=context)
+
+
+In this case **something_expensive** will be called only once and results will be remembered, if **other_view** will call this method again, thanks to **memoized** decorator won't trigger execution and just return precalculated value
 
 
 Why yield
