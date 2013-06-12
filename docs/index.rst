@@ -1,7 +1,7 @@
 Buzzy!
 ======
 
-Low level static page generator, with simple API!
+Low level static page generator, with simple API! 
 
 **Why to write use static sites generator?** There are many cases, when your website will be static and using dynamic pages framework like Django, Ruby on Rails, Flask, Sinatra would be a bit of overhead.
 
@@ -25,7 +25,8 @@ as an alternative method is **easy_install** (If you don’t have pip installed)
 
    $ easy_install buzzy
 
-While the above is the simplest method is simple, the recommended approach would be to create a virtual environment for buzzy project via virtualenv before installing it.
+While the above is the simplest method is simple, the recommended approach would be to create 
+a virtual environment for buzzy project via virtualenv before installing it.
 
 
 Quick Start
@@ -44,7 +45,8 @@ Quick Start
    if __name__ == "__main__":
        StaticSite()
 
-Each "view" created with buzzy needs to be decorated with **register**. This way buzzy will know which method in class should be called during the build process.
+Each render function created with buzzy needs to be decorated with **register**. 
+This way buzzy will know which method in class should be called during the build process.
 
 .. code-block:: bash
 
@@ -177,7 +179,9 @@ Helpers
 	   yield buzzy.render.template("rss.html", "rss.html", context=context)
 
 
-In this case **something_expensive** will be called only once and results will be remembered, if **other_view** will call this method again, thanks to **memoized** decorator won't trigger execution and just return precalculated value.
+In this case **something_expensive** will be called only once and results will be remembered, 
+if **other_view** will call this method again, thanks to **memoized** decorator won't 
+trigger execution and just return precalculated value.
 
 
 Why yield
