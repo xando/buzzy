@@ -32,6 +32,8 @@ a virtual environment for buzzy project via virtualenv before installing it.
 Quick Start
 -----------
 
+Create a regular python file, copy/paste the content presented below.
+
 .. code-block:: python
 
    import buzzy
@@ -53,17 +55,18 @@ This way buzzy will know which method in class should be called during the build
    $ python project.py build
    Generated 2013-06-09 11:10:40.133868
 
-In your build directory, which will be **_build**. 
+Now you should have content inside your build directory, which will be called **_build**.
 
 .. code-block:: bash
 
    $ ls _build
    index.html
+   
    $ cat _build/index.html
    Hello world
 
-You should see there one file *index.html*, 
-and the content of this file will be 'Hello world'
+You should see there one file **index.html**, 
+and the content of this file will be 'Hello world'.
 
 .. code-block:: bash
 
