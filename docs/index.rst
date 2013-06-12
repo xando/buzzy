@@ -148,6 +148,13 @@ Settings
   This setting prevents from calling rebuild for some files. **BUILD_DIR** is will be excluded as well.
 
 
+
+Commands
+--------
+
+**TODO**
+
+
 Helpers
 -------
 
