@@ -76,10 +76,11 @@ class Base(object):
     TEMPLATES_DIR = 'templates'
     SERVER_PORT = 8000
     WATCH_EXCLUDE = [
-        '.git*', '*.py', '*.pyc', "%s/*" % BUILD_DIR, BUILD_DIR
+        '.git*', '*.py', '*.pyc'
     ]
 
     def __init__(self):
+        self.WATCH_EXCLUDE.extend(["%s/*" % self.BUILD_DIR, self.BUILD_DIR])
         self.BUILD_DIR = path(self.BUILD_DIR)
 
         render.render.klass = self
