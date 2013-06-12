@@ -32,6 +32,8 @@ a virtual environment for buzzy project via virtualenv before installing it.
 Quick Start
 -----------
 
+Create a regular python file, copy/paste the content presented below.
+
 .. code-block:: python
 
    import buzzy
@@ -53,17 +55,18 @@ This way buzzy will know which method in class should be called during the build
    $ python project.py build
    Generated 2013-06-09 11:10:40.133868
 
-In your build directory, which will be **_build**. 
+Now you should have content inside your build directory, which will be called **_build**.
 
 .. code-block:: bash
 
    $ ls _build
    index.html
+   
    $ cat _build/index.html
    Hello world
 
-You should see there one file *index.html*, 
-and the content of this file will be 'Hello world'
+You should see there one file **index.html**, 
+and the content of this file will be 'Hello world'.
 
 .. code-block:: bash
 
@@ -161,7 +164,7 @@ Helpers
 
 .. function:: memoized
 	      
-   Helper function decorator that will remember function results within one build cycle. 
+   Helper function decorator, it will remember function results within one build cycle. 
    Useful when you have code to use in than more render function.
 
 .. code-block:: python
@@ -194,7 +197,7 @@ trigger execution and just return precalculated value.
 Why yield
 ---------
 
-There are three main reasons why to use yield here:
+There are three main reasons why to use **yield** here:
 
 * yield is cool, and is overly underrated as python mechanism,
 * render function may call yield many times, which means that one function may generate more than one file,
