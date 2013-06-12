@@ -8,27 +8,23 @@ Welcome to Buzzy!
 
 Low level static page generator, with simple API!
 
-Why to write use static sites generator?
+**Why to write use static sites generator?** There are many cases, when your website will be static and using dynamic pages framework like Django, Ruby on Rails, Flask, Sinatra would be a bit of overhead.
 
-There are many cases, where your website will be static and using dynamic pages framework like Django, Ruby on Rails, Flask, Sinatra would be a bit of overhead.
-
-Why to write another static website generator?
-
-Not really sure, yet!
+**Why to write another static website generator?** Not really sure, yet!
 
 
-Quick Start
------------
+Install
+-------
 
 Buzzy currently runs only Python 2.7.x and earlier versions of Python are not supported. 
 
-You can install it from PyPi, by simply pip:
+You can install it from PyPi, by simply **pip**:
 
 .. code-block:: bash
 
    $ pip install buzzy
 
-as an alternative method is easy_install (If you don’t have pip installed):
+as an alternative method is **easy_install** (If you don’t have pip installed):
 
 .. code-block:: bash
 
@@ -36,8 +32,9 @@ as an alternative method is easy_install (If you don’t have pip installed):
 
 While the above is the simplest method is simple, the recommended approach would be to create a virtual environment for buzzy project via virtualenv before installing it.
 
-The very simple page with buzzy
-```````````````````````````````
+
+Quick Start
+-----------
 
 .. code-block:: python
 
