@@ -1,8 +1,3 @@
-.. Buzzy documentation master file, created by
-   sphinx-quickstart on Sat Jun  1 14:14:55 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Buzzy!
 ======
 
@@ -144,9 +139,11 @@ Settings
 
   Developer server port, from which will page will be server after executing **server** method.
   
-* **WATCH_EXCLUDE**, *default* = ['.git*', '*.py', '*.pyc', '%s/*' % BUILD_DIR, BUILD_DIR']
+* **WATCH_EXCLUDE**, *default* = ['.git*', '*.py', '*.pyc']
 
-  List of files to be excluded from watch process. Usually when **server** method is called, the build directory will be reload every time when page got changed. This setting prevents from calling rebuild for some files. 
+  List of files to be excluded from watch process. 
+  When **watch** command is called, the build directory will be reload every time when page got changed. 
+  This setting prevents from calling rebuild for some files. **BUILD_DIR** is will be excluded as well.
 
 
 Helpers
@@ -180,7 +177,7 @@ Helpers
 	   yield buzzy.render.template("rss.html", "rss.html", context=context)
 
 
-In this case **something_expensive** will be called only once and results will be remembered, if **other_view** will call this method again, thanks to **memoized** decorator won't trigger execution and just return precalculated value
+In this case **something_expensive** will be called only once and results will be remembered, if **other_view** will call this method again, thanks to **memoized** decorator won't trigger execution and just return precalculated value.
 
 
 Why yield
