@@ -128,18 +128,27 @@ class Base(object):
         print "Generated %s" % datetime.now()
 
     def _watch(self):
-        old_hash = ""
+        to_watch = lambda x: not any([
+            fnmatch.fnmatch(x.relative(self.BASE_DIR), pattern)
+            for pattern in self.WATCH_EXCLUDE
+        ])
+
+        files = {}
 
         while True:
-            hash_elements = []
-            for f in path(self.BASE_DIR).walk(r=True):
-                if not any([fnmatch.fnmatch(f.relative(self.BASE_DIR), pattern)
-                            for pattern in self.WATCH_EXCLUDE]):
-                    hash_elements.append(f.m_datetime.isoformat())
-            current_hash = hashlib.md5("".join(hash_elements)).hexdigest()
-            if current_hash != old_hash:
-                old_hash = current_hash
+            changed = []
+            for element in path(self.BASE_DIR).walk(r=True):
+                element = element.relative(self.BASE_DIR)
+                if to_watch(element):
+
+                    value = files.get(element)
+                    if value != element.m_datetime.isoformat():
+                        changed.append(element)
+                        files[element] = element.m_datetime.isoformat()
+
+            if changed:
                 self._build()
+
             time.sleep(0.2)
 
     def _server(self):
