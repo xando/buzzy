@@ -44,28 +44,6 @@ class command(object):
         return partial(self.__call__, obj)
 
 
-class memoized(object):
-    register = []
-
-    def __init__(self, func):
-        self.func = func
-        self.cache = {}
-        self.register.append(self)
-
-    def __call__(self, *args):
-        if not isinstance(args, Hashable):
-            return self.func(*args)
-        if args in self.cache:
-            return self.cache[args]
-        else:
-            value = self.func(*args)
-            self.cache[args] = value
-            return value
-
-    def __get__(self, obj, objtype):
-        return partial(self.__call__, obj)
-
-
 class Base(object):
 
     INCLUDE = []
@@ -73,9 +51,7 @@ class Base(object):
     BUILD_DIR = '_build'
     TEMPLATES_DIR = 'templates'
     SERVER_PORT = 8000
-    WATCH_EXCLUDE = [
-        '.git*', '.hg*', '*.orig'
-    ]
+    WATCH_EXCLUDE = ['.git*', '.hg*', '*.orig']
 
     LOG_NAME = None
     LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -123,10 +99,6 @@ class Base(object):
             self.BUILD_DIR / name, encoding='utf-8', mode="w"
         ).write(content)
 
-    def _clean_memoized(self):
-        for m in memoized.register:
-            m.cache = {}
-
     def _clean_build_dir(self):
         if self.BUILD_DIR.exists:
             [element.rm(r=True) for element in self.BUILD_DIR]
@@ -156,7 +128,6 @@ class Base(object):
         httpd.serve_forever()
 
     def _build(self):
-        self._clean_memoized()
         self._clean_build_dir()
         self._include()
 
@@ -169,10 +140,6 @@ class Base(object):
     @command
     def build(self, args):
         self._build()
-
-    @command
-    def watch(self, args):
-        self._watch()
 
     @command
     def server(self, args):
