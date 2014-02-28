@@ -1,7 +1,5 @@
-from osome import path
-from jinja2 import Environment, FileSystemLoader
-
-from buzzy.packages import markdown as _markdown
+import sys
+from buzzy.path import path
 
 
 class render(object):
@@ -17,22 +15,33 @@ class content(render):
 
 class template(content):
 
-    def __init__(self, name, template, **context):
-        self.name = name
-        self.content = self.template(template).render(**context)
+    def __init__(self, template_file, name,  **context):
 
-    def template(self, template_name):
+        try:
+            from jinja2 import Environment, FileSystemLoader
+        except ImportError:
+            self.klass.logger.error("Python jinja2 package is required")
+            sys.exit()
+
         env = Environment(loader=FileSystemLoader(self.klass.TEMPLATES_DIR))
-        return env.get_template(path(template_name))
+        template = env.get_template(path(template_file))
+
+        self.name = name
+        self.content = template.render(**context)
 
 
 class markdown(content):
 
-    def __init__(self, name, source):
-        md = _markdown.Markdown(extensions=[
-            'buzzy.packages.markdown.extensions.codehilite',
-            'buzzy.packages.markdown.extensions.meta'
-        ])
+    def __init__(self, source, name):
+
+        try:
+            import markdown
+        except ImportError:
+            self.klass.logger.error("Python markdown package is required")
+            sys.exit()
+
+        md = markdown.Markdown(extensions=['codehilite', 'meta'])
+
         self.name = name
         self.content = md.convert(path(source).content)
         self.meta = {a:b if len(b) > 1 else b[0] for a,b in md.Meta.items()}

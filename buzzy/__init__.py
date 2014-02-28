@@ -1,19 +1,19 @@
 import os
 import time
-import args
 import codecs
-import fnmatch
+import logging
+import argparse
 import SimpleHTTPServer
 import SocketServer
 
-from osome import path
 from functools import partial
 from collections import Hashable
-from datetime import datetime
 from multiprocessing import Process
+from watchdog.observers import Observer
+from watchdog.events import PatternMatchingEventHandler
 
-
-from buzzy import render
+from buzzy import render, log
+from buzzy.path import path
 
 
 class register(object):
@@ -35,7 +35,7 @@ class command(object):
 
     def __init__(self, func):
         self.func = func
-        self.register.append(func.func_name)
+        self.register.append(self)
 
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
@@ -74,20 +74,42 @@ class Base(object):
     TEMPLATES_DIR = 'templates'
     SERVER_PORT = 8000
     WATCH_EXCLUDE = [
-        '.git*', '*.py', '*.pyc'
+        '.git*', '.hg*', '*.orig'
     ]
 
+    LOG_NAME = None
+    LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    LOG_HANDLERS = [log.ColorizingStreamHandler()]
+    LOG_LEVERL = logging.INFO
+
     def __init__(self):
+
+        self.logger = logging.getLogger(self.LOG_NAME or self.__class__.__name__)
+        self.logger.setLevel(logging.DEBUG)
+        self.formatter = logging.Formatter(self.LOG_FORMAT)
+        for handler in self.LOG_HANDLERS:
+            handler.setFormatter(self.formatter)
+            self.logger.addHandler(handler)
+
         self.WATCH_EXCLUDE.extend(["%s/*" % self.BUILD_DIR, self.BUILD_DIR])
+        self.WATCH_EXCLUDE = ["%s/%s" % (self.BASE_DIR, p) for p in self.WATCH_EXCLUDE]
         self.BUILD_DIR = path(self.BUILD_DIR)
 
         render.render.klass = self
-        arg_0 = args.all[0]
-        if arg_0 not in command.register:
-            print "No such command '%s'" % arg_0
-        else:
-            getattr(self, arg_0)(args)
 
+        parser = argparse.ArgumentParser()
+        subparsers = parser.add_subparsers()
+
+        for _command in command.register:
+            sub_parser = subparsers.add_parser(
+                _command.func.func_name,
+                help=_command.func.__doc__
+            )
+            sub_parser.add_argument('args', nargs=argparse.REMAINDER)
+            sub_parser.set_defaults(func=_command.func)
+
+        args = parser.parse_args()
+        args.func(self, args)
 
     def _ensure_path(self, name):
         directory = path(name).dir()
@@ -113,7 +135,25 @@ class Base(object):
 
     def _include(self):
         for element in self.INCLUDE:
-            path(element).cp(self.BUILD_DIR / element, r=True)
+            path(element).cp(self.BUILD_DIR / element)
+
+    def _server(self):
+        self._build()
+        os.chdir(self.BUILD_DIR)
+
+        Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+
+        def log_message(obj, format, *args):
+            self.logger.info("%s %s" % ("serving", format % args))
+
+        Handler.log_message = log_message
+        SocketServer.ThreadingTCPServer.allow_reuse_address = True
+        httpd = SocketServer.ThreadingTCPServer(
+            ("", self.SERVER_PORT), Handler
+        )
+
+        self.logger.info("serving at port %s" % self.SERVER_PORT)
+        httpd.serve_forever()
 
     def _build(self):
         self._clean_memoized()
@@ -124,44 +164,7 @@ class Base(object):
             for renderer in getattr(self, func)():
                 self.write(renderer.name, renderer.content)
 
-        print "Generated %s" % datetime.now()
-
-    def _watch(self):
-        to_watch = lambda x: not any([
-            fnmatch.fnmatch(x.relative(self.BASE_DIR), pattern)
-            for pattern in self.WATCH_EXCLUDE
-        ])
-
-        files = {}
-
-        while True:
-            changed = []
-            for element in path(self.BASE_DIR).walk(r=True):
-                element = element.relative(self.BASE_DIR)
-                if to_watch(element):
-
-                    value = files.get(element)
-                    if value != element.m_datetime.isoformat():
-                        changed.append(element)
-                        files[element] = element.m_datetime.isoformat()
-
-            if changed:
-                self._build()
-
-            time.sleep(0.2)
-
-    def _server(self):
-        self._build()
-        os.chdir(self.BUILD_DIR)
-
-        Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-        SocketServer.ThreadingTCPServer.allow_reuse_address = True
-        httpd = SocketServer.ThreadingTCPServer(
-            ("", self.SERVER_PORT), Handler
-        )
-
-        print "serving at port %s" % self.SERVER_PORT
-        httpd.serve_forever()
+        self.logger.info('build generated')
 
     @command
     def build(self, args):
@@ -176,24 +179,19 @@ class Base(object):
         server = Process(target=self._server)
         server.start()
 
+        event_handler = PatternMatchingEventHandler(ignore_patterns=self.WATCH_EXCLUDE)
+        event_handler.on_modified = lambda event : self._build()
+        observer = Observer()
+        observer.schedule(event_handler, self.BASE_DIR, recursive=True)
+        observer.start()
+
         try:
-            if '--no-watch' not in args.flags:
-                self._watch()
-        except KeyboardInterrupt:
+            while True:
+                time.sleep(1)
+        except (KeyboardInterrupt, SystemExit):
             server.terminate()
+            observer.stop()
 
-    @command
-    def create(self, args):
+        observer.join()
 
-        if len(args.all) > 2:
-            template = args.all[2]
-        else:
-            template = 'basic'
-
-        if len(args.all) > 1:
-            name = args.all[1]
-            (path(__file__).dir() / 'templates' / template).cp(
-                path(os.getcwd()) / name, r=True
-            )
-        else:
-            print "name required"
+        self.logger.info("Clossing")
