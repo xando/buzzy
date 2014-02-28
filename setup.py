@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
+
 setup(
     name = 'buzzy',
-    version = '0.4.2',
+    version = '0.5.1',
     description = 'Static site generator',
     license = 'BSD',
     author = 'Sebastian Pawluś',

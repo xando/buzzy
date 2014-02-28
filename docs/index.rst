@@ -95,7 +95,7 @@ Renderers
    
 .. function:: buzzy.render.template(target, template, **context)
 
-   Renderer class to render file from a template.
+   Renderer class to render file from a template. **jinja2** package is required 
 
    :param target: name of the destination file
    :param template: jinja2 template located in the **TEMPLATE_DIR**
@@ -112,7 +112,7 @@ Renderers
 
 .. function:: buzzy.render.markdown(target, source)
 	      
-   Renderer class to render file from a markdown markup.
+   Renderer class to render file from a markdown markup. **markdown** package is required 
 
    :param target: name of the destination file
    :param source: for source of the markup file
@@ -127,14 +127,14 @@ Renderers
 Settings
 --------
 
-* **INCLUDE**, *default* = []
-  
-  List of files and directories that will be copy over to build directory 
-  without any modifications.
-  
-* **BUILD_DIR**, *default* = 'build'
+* **BUILD_DIR**, *default* = '_build'
 
   Build directory, where static page will be generated after executing **build** method.
+
+* **INCLUDE**, *default* = []
+  
+  List of files and directories that will be copy over to the build directory 
+  without any modifications.
   
 * **TEMPLATES_DIR**, *default* = 'templates'
 
@@ -144,54 +144,39 @@ Settings
 
   Developer server port, from which will page will be server after executing **server** method.
   
-* **WATCH_EXCLUDE**, *default* = ['.git*', '*.py', '*.pyc']
+* **WATCH_EXCLUDE**, *default* = ['.git*', '.hg*', '*.orig']
 
   List of files to be excluded from watch process. 
   When **watch** command is called, the build directory will be reload every time when page got changed. 
   This setting prevents from calling rebuild for some files. **BUILD_DIR** is will be excluded as well.
 
 
-
 Commands
 --------
 
-**TODO**
+* **build**
 
+  Regenerates the content inside **BUILD_DIR**
 
-Helpers
--------
+* **server**
 
+  Runs developemnt server. It will `watch` development directory, if files inside will get changed
+  it will trigger **build** command.
 
-.. function:: buzzy.memoized
-	      
-   Helper function decorator, it will remember function results within one build cycle. 
-   Useful when you have code to use in than more render function.
+* Custom command
+
+  By using **@buzzy.command** decorator you can register your own command
 
 .. code-block:: python
 
-   import buzzy
-
-   class StaticSite(buzzy.Base):
-
-       @buzzy.memoized
-       def something_expensive(self):
-           # code
-           return results
-
-       @buzzy.register
-       def some_view(self):
-           context = self.something_expensive()
-           yield buzzy.render.template("index.html", "index.html", context=context)
-
-       @buzzy.register
-       def other_view(self):
-           context = self.something_expensive()
-	   yield buzzy.render.template("rss.html", "rss.html", context=context)
+   @buzzy.command
+   def mycommand(self):
+       deploy_site()
 
 
-In this case **something_expensive** will be called only once and results will be remembered, 
-if **other_view** will call this method again, thanks to **memoized** decorator won't 
-trigger execution and just return precalculated value.
+.. code-block:: bash
+
+   $ python project.py mycommand
 
 
 Why yield
