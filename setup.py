@@ -11,10 +11,8 @@ setup(
     url="http://buzzy.xando.org",
     packages=find_packages(),
     include_package_data = True,
-
     install_requires = [
-        'osome==0.1.2',
-        'Jinja2==2.6'
+        'watchdog==0.7.1'
     ],
     zip_safe=False,
     keywords = "website static generator",
