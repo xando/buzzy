@@ -1,7 +1,7 @@
 Buzzy!
 ======
 
-Low level static page generator, with simple API! 
+Low level static page generator, with simple API!
 
 **Why to write use static sites generator?** There are many cases, when your website will be static and using dynamic pages framework like Django, Ruby on Rails, Flask, Sinatra would be a bit of overhead.
 
@@ -11,7 +11,7 @@ Low level static page generator, with simple API!
 Install
 -------
 
-Buzzy currently runs only Python 2.7.x and earlier versions of Python are not supported. 
+Buzzy currently runs only Python 2.7.x and earlier versions of Python are not supported.
 
 You can install it from PyPi, by simply **pip**:
 
@@ -25,7 +25,7 @@ as an alternative method is **easy_install** (If you don’t have pip installed)
 
    $ easy_install buzzy
 
-While the above is the simplest method is simple, the recommended approach would be to create 
+While the above is the simplest method is simple, the recommended approach would be to create
 a virtual environment for buzzy project via virtualenv before installing it.
 
 
@@ -39,15 +39,15 @@ Create a regular python file, copy/paste the content presented below.
    import buzzy
 
    class StaticSite(buzzy.Base):
-   
+
        @buzzy.register
        def thing(self):
            yield buzzy.render.content("index.html", "Hello world")
-   
+
    if __name__ == "__main__":
        StaticSite()
 
-Each render function created with buzzy needs to be decorated with **register**. 
+Each render function created with buzzy needs to be decorated with **register**.
 This way buzzy will know which method in class should be called during the build process.
 
 .. code-block:: bash
@@ -61,11 +61,11 @@ Now you should have content inside your build directory, which will be called **
 
    $ ls _build
    index.html
-   
+
    $ cat _build/index.html
    Hello world
 
-You should see there one file **index.html**, 
+You should see there one file **index.html**,
 and the content of this file will be 'Hello world'.
 
 .. code-block:: bash
@@ -78,28 +78,28 @@ Go to your browser to http://127.0.0.1:8000/, done!
 Renderers
 ---------
 
-.. function:: buzzy.render.content(target, content)
-	      
+.. function:: buzzy.render.content(content, target_file)
+
    Renderer class to create a file from a content.
 
-   :param target: name of the destination file
    :param content: content to put inside he file
+   :param target_file: name of the destination file
 
 .. code-block:: python
-   
+
    @buzzy.register
    def view(self):
        yield buzzy.render.content("index.html", "hello world")
 
 
-   
-.. function:: buzzy.render.template(target, template, **context)
 
-   Renderer class to render file from a template. **jinja2** package is required 
+.. function:: buzzy.render.template(template, target_file, **context)
 
-   :param target: name of the destination file
+   Renderer class to render file from a template. **jinja2** package is required
+
    :param template: jinja2 template located in the **TEMPLATE_DIR**
-   :param **context: as many named parameters as needed, 
+   :param target_file: name of the destination file
+   :param **context: as many named parameters as needed,
 		     all will be put as a context inside the template
 
 .. code-block:: python
@@ -110,11 +110,11 @@ Renderers
 
 
 
-.. function:: buzzy.render.markdown(target, source)
-	      
-   Renderer class to render file from a markdown markup. **markdown** package is required 
+.. function:: buzzy.render.markdown(source, target_file)
 
-   :param target: name of the destination file
+   Renderer class to render file from a markdown markup. **markdown** package is required
+
+   :param target_file: name of the destination file
    :param source: for source of the markup file
 
 .. code-block:: python
@@ -132,10 +132,10 @@ Settings
   Build directory, where static page will be generated after executing **build** method.
 
 * **INCLUDE**, *default* = []
-  
-  List of files and directories that will be copy over to the build directory 
+
+  List of files and directories that will be copy over to the build directory
   without any modifications.
-  
+
 * **TEMPLATES_DIR**, *default* = 'templates'
 
   Templates directory, jinja2 base template directory used with **render.template**.
@@ -143,11 +143,11 @@ Settings
 * **SERVER_PORT**, *default* = '8000'
 
   Developer server port, from which will page will be server after executing **server** method.
-  
+
 * **WATCH_EXCLUDE**, *default* = ['.git*', '.hg*', '*.orig']
 
-  List of files to be excluded from watch process. 
-  When **watch** command is called, the build directory will be reload every time when page got changed. 
+  List of files to be excluded from watch process.
+  When **watch** command is called, the build directory will be reload every time when page got changed.
   This setting prevents from calling rebuild for some files. **BUILD_DIR** is will be excluded as well.
 
 
