@@ -3,15 +3,19 @@ Buzzy!
 
 Low level static page generator, with simple API!
 
-**Why to write use static sites generator?** There are many cases, when your website will be static and using dynamic pages framework like Django, Ruby on Rails, Flask, Sinatra would be a bit of overhead.
+**Why to use static sites generator?**
 
-**Why to write another static website generator?** Not really sure, yet!
+There are many cases, when your website will be static and using dynamic pages framework like Django, Ruby on Rails, Flask, Sinatra would be a bit of overhead.
+
+**Why to write yet another static website generator?**
+
+Not really sure, yet!
 
 
 Install
 -------
 
-Buzzy currently runs only Python 2.7.x and earlier versions of Python are not supported.
+Buzzy currently runs only Python 2.7.x and earlier versions of Python are not supported and Python 3 was not tested yet.
 
 You can install it from PyPi, by simply **pip**:
 
@@ -19,20 +23,13 @@ You can install it from PyPi, by simply **pip**:
 
    $ pip install buzzy
 
-as an alternative method is **easy_install** (If you don’t have pip installed):
-
-.. code-block:: bash
-
-   $ easy_install buzzy
-
-While the above is the simplest method is simple, the recommended approach would be to create
-a virtual environment for buzzy project via virtualenv before installing it.
+A recommended approach would be to create a virtual environment for buzzy project via virtualenv before installing it.
 
 
 Quick Start
 -----------
 
-Create a regular python file, copy/paste the content presented below.
+Create a regular python file, copy paste the content presented below.
 
 .. code-block:: python
 
@@ -42,7 +39,7 @@ Create a regular python file, copy/paste the content presented below.
 
        @buzzy.register
        def thing(self):
-           yield buzzy.render.content("index.html", "Hello world")
+              yield buzzy.render.content("Hello world", "index.html")
 
    if __name__ == "__main__":
        StaticSite()
@@ -53,7 +50,7 @@ This way buzzy will know which method in class should be called during the build
 .. code-block:: bash
 
    $ python project.py build
-   Generated 2013-06-09 11:10:40.133868
+   2014-03-01 20:54:55,599 - StaticSite - INFO - build generated
 
 Now you should have content inside your build directory, which will be called **_build**.
 
@@ -71,6 +68,9 @@ and the content of this file will be 'Hello world'.
 .. code-block:: bash
 
    $ python project.py server
+   2014-03-01 20:54:55,599 - StaticSite - INFO - build generated
+   2014-03-01 20:54:55,600 - StaticSite - INFO - serving at port 8000
+
 
 Go to your browser to http://127.0.0.1:8000/, done!
 
@@ -80,7 +80,7 @@ Renderers
 
 .. function:: buzzy.render.content(content, target_file)
 
-   Renderer class to create a file from a content.
+   A renderer class to create a file from a content.
 
    :param content: content to put inside he file
    :param target_file: name of the destination file
@@ -95,7 +95,7 @@ Renderers
 
 .. function:: buzzy.render.template(template, target_file, **context)
 
-   Renderer class to render file from a template. **jinja2** package is required
+   A renderer class to render file from a template. **jinja2** package is required
 
    :param template: jinja2 template located in the **TEMPLATE_DIR**
    :param target_file: name of the destination file
@@ -112,7 +112,7 @@ Renderers
 
 .. function:: buzzy.render.markdown(source, target_file)
 
-   Renderer class to render file from a markdown markup. **markdown** package is required
+   A renderer class to render file from a markdown markup. **markdown** package is required
 
    :param target_file: name of the destination file
    :param source: for source of the markup file
@@ -148,7 +148,7 @@ Settings
 
   List of files to be excluded from watch process.
   When **watch** command is called, the build directory will be reload every time when page got changed.
-  This setting prevents from calling rebuild for some files. **BUILD_DIR** is will be excluded as well.
+  This setting prevents from calling rebuild for some files. The **BUILD_DIR** is will be excluded as well.
 
 
 Commands
