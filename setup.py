@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'buzzy',
-    version = '0.5.1',
+    version = '0.5.2',
     description = 'Static site generator',
     license = 'BSD',
     author = 'Sebastian Pawluś',
