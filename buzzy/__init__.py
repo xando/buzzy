@@ -1,15 +1,15 @@
 import os
 import time
 import codecs
-import logging
 import argparse
+import logging
 import SimpleHTTPServer
 import SocketServer
 
+from watchdog.observers.polling import PollingObserver as Observer
+
 from functools import partial
-from collections import Hashable
 from multiprocessing import Process
-from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 
 from buzzy import render, log
@@ -69,6 +69,7 @@ class Base(object):
 
         self.WATCH_EXCLUDE.extend(["%s/*" % self.BUILD_DIR, self.BUILD_DIR])
         self.WATCH_EXCLUDE = ["%s/%s" % (self.BASE_DIR, p) for p in self.WATCH_EXCLUDE]
+
         self.BUILD_DIR = path(self.BUILD_DIR)
 
         render.render.klass = self
@@ -114,6 +115,7 @@ class Base(object):
         os.chdir(self.BUILD_DIR)
 
         Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+        Handler.extensions_map[''] = 'text/html'
 
         def log_message(obj, format, *args):
             self.logger.info("%s %s" % ("serving", format % args))
